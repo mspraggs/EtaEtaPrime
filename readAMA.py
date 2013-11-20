@@ -1,3 +1,5 @@
+# Based on readAMA.c by Andreas Juettner
+
 import numpy as np
 import fileio
 
