@@ -1,4 +1,5 @@
 import numpy as np
+import fileio
 
 def read2pt(exact_filename, sloppy_filename, time_extent, num_src):
     """Reads in the exact and sloppy results from the supplied files
@@ -14,7 +15,7 @@ def read2pt(exact_filename, sloppy_filename, time_extent, num_src):
     :type num_src: :class:`int`
     """
     
-    exact_raw_data = np.genfromtxt(exact_filename)
+    exact_raw_data = fileio._load_data(exact_filename)
     # Convert the last two columns into a complex value
     # We reshape so the first index in the array corresponds to the source
     exact_correlators \
@@ -35,7 +36,7 @@ def read2pt(exact_filename, sloppy_filename, time_extent, num_src):
     exact_source_average = np.mean(exact_correlators, axis=0)
     
     # Now read in the sloppies
-    sloppy_raw_data = np.genfromtxt(sloppy_filename)
+    sloppy_raw_data = fileio._load_data(sloppy_filename)
     sloppy_correlators \
       = np.reshape(sloppy_raw_data[:, 2] + 1j * sloppy_raw_data[:, 3],
                    (time_extent, time_extent))
