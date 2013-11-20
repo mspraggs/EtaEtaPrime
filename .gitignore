@@ -1,2 +1,9 @@
+/readAMA
+/fastfunctions/fastread.so
+/fastfunctions/fastread.o
+/fastfunctions/cmake_install.cmake
+/fastfunctions/Makefile
 *~
 *.pyc
+fastfunctions/CMakeFiles/*
+fastfunctions/CMakeCache.txt
