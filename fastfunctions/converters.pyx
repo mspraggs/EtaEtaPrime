@@ -1,4 +1,6 @@
 # Taken from code by IanH on stack overflow
+# http://stackoverflow.com/questions/17973507/ ...
+# ... why-is-converting-a-long-2d-list-to-numpy-array-so-slow
 from numpy cimport ndarray as ar
 import numpy as np
 cimport cython
