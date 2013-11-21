@@ -15,6 +15,8 @@ def read2pt(exact_filename, sloppy_filename, time_extent, num_src):
     :type time_extent: :class:`int`
     :param num_src: The number of sources
     :type num_src: :class:`int`
+    
+    :returns: :class:`tuple` of :class:`numpy.ndarray` s: exact source average, sloppy source average, residual source average and AMA source average
     """
     
     exact_raw_data = fileio._load_data(exact_filename)
