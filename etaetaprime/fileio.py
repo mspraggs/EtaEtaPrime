@@ -5,19 +5,27 @@ pyximport.install()
 #from fastfunctions import fastread
 from fastfunctions import converters
 
-def _file_to_list(filename):
-    """Reads the supplied file into a compound list"""
+def file_to_list(filename):
+    """Reads the supplied file into a compound list
+    
+    :param filename: The file to import as a list
+    :type filename: :class:`str`
+    :returns: Compound :class:`list`
+    """
     
     with open(filename) as f:
-        # This is messy, but it shaves a few milliseconds of the function runtime
-        out = [[float(line[:4]), float(line[4:8]),
-                float(line[8:26]), float(line[26:])]
-                for line in f.readlines()]
+        out = [[float(x) for x in line.split()] for line in f.readlines()]
         
     return out
 
-def _load_data(filename):
-    """Reads the supplied file into a numpy array"""
+def load_data(filename):
+    """Reads the supplied file into a numpy array, using cython to
+    speed up the numpy array conversion
+    
+    :param filename: The file to import
+    :type filename: :class:`str`
+    :returns: :class:`numpy.ndarray`
+    """
     
     # Could use fastread.read_csv here instead of _file_to_list, but at the
     # moment this affords no performance increase
