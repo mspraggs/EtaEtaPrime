@@ -1,5 +1,5 @@
 #from numpy cimport ndarray as ar
-from numpy import unique
+import numpy as np
 cimport numpy as np
 cimport cython
 
@@ -8,7 +8,7 @@ cimport cython
 def diff(a, b):
     cdef int i, j, h=a.size, w=b.size
     
-    cdef np.ndarray[np.int32_t, ndim=2] new = np.empty((h, w), dtype=np.int32)
+    cdef np.ndarray[np.int_t, ndim=2] new = np.empty((h, w), dtype=np.int)
     
     for i in xrange(h):
         for j in xrange(w):
