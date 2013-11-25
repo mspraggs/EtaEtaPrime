@@ -3,14 +3,14 @@
 import numpy as np
 import fileio
 
-def read2pt(exact_filename, sloppy_filename, time_extent, num_src):
+def read2pt(exact_data, sloppy_data, time_extent, num_src):
     """Reads in the exact and sloppy results from the supplied files
     and does the AMA
     
-    :param exact_filename: The file containing the exact results
-    :type exact_filename: :class:`str`
-    :param sloppy_filename: The file containing the sloppy results
-    :type sloppy_filename: :class:`str`
+    :param exact_data: The array containing the exact results
+    :type exact_data: :class:`numpy.ndarray`
+    :param sloppy_data: The file containing the sloppy results
+    :type sloppy_data: :class:`numpy.ndarray`
     :param time_extent: The correlator time extent
     :type time_extent: :class:`int`
     :param num_src: The number of sources
@@ -19,15 +19,13 @@ def read2pt(exact_filename, sloppy_filename, time_extent, num_src):
     :returns: :class:`tuple` of :class:`numpy.ndarray` s: exact source average, sloppy source average, residual source average and AMA source average
     """
     
-    exact_raw_data = fileio._load_data(exact_filename)
     # Convert the last two columns into a complex value
     # We reshape so the first index in the array corresponds to the source
     exact_correlators \
-      = np.reshape(exact_raw_data[:, 2] + 1j * exact_raw_data[:, 3],
-                   (num_src, time_extent))
+      = np.reshape(exact_data[:, 2:4], (num_src, time_extent))
     
     # Move every num_srcth datum to a list of sources file
-    exact_t_src = np.int64(exact_raw_data[::time_extent, 0])
+    exact_t_src = np.int64(exact_data[::time_extent, 0])
     
     # Check that there are time_extent * num_src data
     if exact_correlators.size != time_extent * num_src:
@@ -40,10 +38,8 @@ def read2pt(exact_filename, sloppy_filename, time_extent, num_src):
     exact_source_average = np.mean(exact_correlators, axis=0)
     
     # Now read in the sloppies
-    sloppy_raw_data = fileio._load_data(sloppy_filename)
     sloppy_correlators \
-      = np.reshape(sloppy_raw_data[:, 2] + 1j * sloppy_raw_data[:, 3],
-                   (time_extent, time_extent))
+      = np.reshape(sloppy_data[:, 2:4], (time_extent, time_extent))
     
     sloppy_source_average = np.mean(sloppy_correlators, axis=0)
     
