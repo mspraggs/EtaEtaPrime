@@ -1,4 +1,3 @@
-#from numpy cimport ndarray as ar
 import numpy as np
 cimport numpy as np
 cimport cython
