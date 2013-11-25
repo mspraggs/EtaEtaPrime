@@ -1,5 +1,6 @@
 # Use cython to speed up the conversion to a numpy array from a list
 import pyximport
+import numpy as np
 pyximport.install()
 from fastfunctions import converters
 
@@ -59,3 +60,22 @@ def load_traces(filename):
     out[:, 2] = raw_data[:, 3] + 1j * raw_data[:, 4]
 
     return out
+
+def split_traces(traces):
+    """Splits the supplied trace array into traces and timeslices
+    depending on which elements are non-zero
+    
+    :param traces: The array containing two traces
+    :type traces: :class:`numpy.ndarray`
+    :returns: :class:`tuple` of :class:`numpy.ndarrays`: first_timeslices, second_timeslices, first_traces, second_traces
+    """
+    
+    first_trace_indices = traces[:, 1].nonzero()[0]
+    second_trace_indices = traces[:, 2].nonzero()[0]
+    
+    first_timeslices = np.int64(traces[first_trace_indices, 0].real)
+    second_timeslices = np.int64(traces[second_trace_indices, 0].real)
+    first_traces = traces[first_trace_indices, 1]
+    second_traces = traces[second_trace_indices, 2]
+    
+    return first_timeslices, second_timeslices, first_traces, second_traces
