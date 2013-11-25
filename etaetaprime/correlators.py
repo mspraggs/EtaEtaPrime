@@ -44,7 +44,6 @@ def combine_traces(first_trace, second_trace, first_timeslices=None,
     correlator = np.zeros(timeslices.size, dtype=np.complex)
     
     # Now loop over the unique timeslices and sum the corresponding products
-    for i, t in enumerate(timeslices):
-        correlator[i] = np.sum(prods[diffs == t])
+    correlator = combinatorics.sum_prods(timeslices, diffs, prods)
     # Turn the result into a numpy array
     return np.array([timeslices, correlator])
