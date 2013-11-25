@@ -30,8 +30,8 @@ def combine_traces(first_trace, second_trace, first_timeslices=None,
         second_timeslices = np.arange(second_trace.size)
         
     # Make sure the supplied timeslices are in int64 format
-    first_timeslices = np.int64(first_timeslices)
-    second_timeslices = np.int64(second_timeslices)
+    first_timeslices = np.int64(first_timeslices.real)
+    second_timeslices = np.int64(second_timeslices.real)
     
     # Get all possible differences between the various timeslice pairings
     # (This works like an outer product, returning a 2d array)
