@@ -4,6 +4,7 @@ cimport cython
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+@cython.nonecheck(False)
 def diff(a, b):
     cdef int i, j, h=a.size, w=b.size
     
@@ -15,4 +16,24 @@ def diff(a, b):
             if new[i, j] < 0:
                 new[i, j] = -new[i, j]
             
+    return new
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.nonecheck(False)
+def sum_prods(ts, diffs, prods):
+    cdef int i, j, k, num_t = ts.size, h = diffs.shape[0], w = diffs.shape[1]
+    
+    cdef np.ndarray[np.complex128_t, ndim=1] new \
+      = np.zeros(num_t, dtype=np.complex128)
+    
+    cdef np.ndarray[np.int_t, ndim=1] ts_c = ts
+    cdef np.ndarray[np.int_t, ndim=2] diffs_c = diffs
+      
+    for i in xrange(num_t):
+        for j in xrange(h):
+            for k in xrange(w):
+                if diffs_c[j, k] == ts_c[i]:
+                    new[i] = new[i] + prods[j, k]
+                    
     return new
