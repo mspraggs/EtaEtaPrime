@@ -3,7 +3,7 @@ import numpy as np
 import fileio
 import itertools
 import pyximport
-pyximport.install()
+pyximport.install(reload_support=True)
 from fastfunctions import combinatorics
 
 def combine_traces(first_trace, second_trace, first_timeslices=None,
