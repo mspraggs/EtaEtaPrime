@@ -133,3 +133,18 @@ def parse_disconnected(exact_data, sloppy_data):
 
     return exact_correlator[1], sloppy_restricted_correlator[1], sloppy_correlator[1]
 
+def ama(exact_correlator, sloppy_restricted_correlator, sloppy_correlator):
+    """Takes the three correlators required for the ama and does the
+    subtraction
+    
+    :param exact_correlator: The source-averaged exact correlator
+    :type exact_correlator: :class:`numpy.ndarray`
+    :param sloppy_restricted_correlator: The source-averaged restricted sloppy correlator
+    :type sloppy_restricted_correlator: :class:`numpy.ndarray`
+    :param sloppy_correlator: The source-averaged sloppy correlator
+    :type sloppy_correlator: :class:`numpy.ndarray`
+    
+    :returns: :class:`numpy.ndarray`
+    """
+
+    return exact_correlator - sloppy_restricted_correlator + sloppy_correlator
