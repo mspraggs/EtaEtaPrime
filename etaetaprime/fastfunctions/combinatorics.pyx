@@ -21,11 +21,14 @@ def diff(a, b):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.nonecheck(False)
-def sum_prods(ts, diffs, prods):
+def av_prods(ts, diffs, prods):
     cdef int i, j, k, num_t = ts.size, h = diffs.shape[0], w = diffs.shape[1]
     
     cdef np.ndarray[np.complex128_t, ndim=1] new \
       = np.zeros(num_t, dtype=np.complex128)
+    
+    cdef np.ndarray[np.int_t, ndim=1] frequency \
+      =np.zeros(num_t, dtype=np.int)
     
     cdef np.ndarray[np.int_t, ndim=1] ts_c = ts
     cdef np.ndarray[np.int_t, ndim=2] diffs_c = diffs
@@ -35,5 +38,6 @@ def sum_prods(ts, diffs, prods):
             for k in xrange(w):
                 if diffs_c[j, k] == ts_c[i]:
                     new[i] = new[i] + prods[j, k]
+                    frequency[i] += 1
                     
-    return new
+    return new / frequency
