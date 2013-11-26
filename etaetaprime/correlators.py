@@ -1,4 +1,3 @@
-import ama
 import numpy as np
 import fileio
 import itertools
@@ -181,3 +180,39 @@ def run_one(exact_file, sloppy_file, connected=False):
         
         return correlator_ama
         
+def run_all(exact_folder, sloppy_folder, input_prefix, output_prefix, start, stop, step,
+            connected=False):
+    """Applies the all-mode average to all files in the specified directories
+    and saves the results in a set of numpy binaries
+    
+    :param exact_folder: The folder containing the exact results
+    :type exact_folder: :class:`str`
+    :param sloppy_folder: The folder containing the sloppy results
+    :type sloppy_folder: :class:`str`
+    :param input_prefix: The common prefix used for the input data files in each folder
+    :type input_prefix: :class:`str`
+    :param output_prefix: The common prefix used for the output data files in each folder
+    :type output_prefix: :class:`str`
+    :param start: The first configuration number used at the end of the input filename
+    :type start: :class:`int`
+    :param stop: The last configuration number used at the end of the input filename
+    :type stop: :class:`int`
+    :param step: The difference between consecutive configuration numbers
+    :type step: :class:`int`
+    :param connected: Determines whether the associated diagram is connected
+    :type connected: :class:`bool`
+    """
+    
+    for i in xrange(start, stop + step, step):
+        try:
+            correlator = run_one("{}/{}.{}".format(exact_folder, input_prefix, i),
+                                 "{}/{}.{}".format(sloppy_folder, input_prefix, i),
+                                 connected)
+        
+            np.save("{}{}".format(output_prefix, i), correlator)
+            
+        except IOError:
+            print("Results for configuration {} missing; skipping.".format(i))
+        
+
+    
