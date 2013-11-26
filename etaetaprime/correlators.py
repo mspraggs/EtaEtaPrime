@@ -148,3 +148,36 @@ def ama(exact_correlator, sloppy_restricted_correlator, sloppy_correlator):
     """
 
     return exact_correlator - sloppy_restricted_correlator + sloppy_correlator
+
+def run_one(exact_file, sloppy_file, connected=False):
+    """Applied the AMA procedure to the correlators or traces in the specified files
+    
+    :param exact_file: The file containing the exact correlators or traces
+    :type exact_file: :class:`str`
+    :param sloppy_file: The file containing the sloppy correlators or traces
+    :type sloppy_file: :class:`str`
+    :param connected: Determines whether diagram is connected or not
+    
+    :returns: :class:`numpy.ndarray` containing the correlator
+    """
+    
+    if connected:
+        exact_data = fileio.load_correlators(exact_file)
+        sloppy_data = fileio.load_correlators(sloppy_file)
+        
+        correlators = parse_connected(exact_data, sloppy_data)
+        # Pass the tuple result from the previous function as an *args expression
+        # so each item in the tuple becomes a separate argument
+        correlator_ama = ama(*correlators)
+        
+        return correlator_ama
+    
+    else:
+        exact_data = fileio.load_traces(exact_file)
+        sloppy_data = fileio.load_traces(sloppy_file)
+        
+        correlators = parse_disconnected(exact_data, sloppy_data)
+        correlator_ama = ama(*correlators)
+        
+        return correlator_ama
+        
