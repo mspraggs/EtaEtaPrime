@@ -73,6 +73,8 @@ class TestFileIO:
         assert (split[1] == np.arange(10)).all()
         assert (split[2] == np.array([2 + 3j, 2 - 1j])).all()
         assert (split[3] == random).all()
+        
+class TestCorrelators:
 
     def test_cython_diff(self):
         
