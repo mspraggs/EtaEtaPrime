@@ -47,3 +47,47 @@ def combine_traces(first_trace, second_trace, first_timeslices=None,
     correlator = combinatorics.av_prods(timeslices, diffs, prods)
     # Turn the result into a numpy array
     return np.array([timeslices, correlator])
+
+def parse_connected(exact_data, sloppy_data):
+    """Takes the exact and sloppy connected correlators and generates the
+    correlators required for the AMA process
+    
+    :param exact_data: The array containing the exact results
+    :type exact_data: :class:`numpy.ndarray`
+    :param sloppy_data: The file containing the sloppy results
+    :type sloppy_data: :class:`numpy.ndarray`
+    
+    :returns: :class:`tuple` of :class:`numpy.ndarray`
+    """
+    
+    # We can grab the time_extent and the number of sources from the input
+    # data by looking at the number of unique entries in each case
+    time_extent = np.unique(np.int64(exact_data[:, 1])).size
+    num_src = np.unique(np.int64(exact_data[:, 0])).size
+
+    # Convert the last two columns into a complex value
+    # We reshape so the first index in the array corresponds to the source
+    exact_correlators \
+      = np.reshape(exact_data[:, 2], (num_src, time_extent))
+    
+    # Move every num_srcth datum to a list of sources file
+    exact_t_src = np.int64(exact_data[::time_extent, 0])
+    
+    # Check that there are time_extent * num_src data
+    if exact_correlators.size != time_extent * num_src:
+        raise ValueError("Expected {} rows in exact data file, found {}"
+                         .format(time_extent * num_src, exact_correlators.size))
+
+    # Average over the sources
+    exact_source_average = np.mean(exact_correlators, axis=0)
+
+    # Now look at the sloppies
+    sloppy_correlators \
+      = np.reshape(sloppy_data[:, 2], (time_extent, time_extent))
+    
+    sloppy_source_average = np.mean(sloppy_correlators, axis=0)
+
+    sloppy_restricted_correlators = sloppy_correlators[exact_t_src]
+    sloppy_restr_corr_src_av = np.mean(sloppy_restricted_correlators, axis=0)
+    
+    return exact_source_average, sloppy_restr_corr_src_av, sloppy_source_average
