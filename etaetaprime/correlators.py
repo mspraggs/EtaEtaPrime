@@ -91,3 +91,45 @@ def parse_connected(exact_data, sloppy_data):
     sloppy_restr_corr_src_av = np.mean(sloppy_restricted_correlators, axis=0)
     
     return exact_source_average, sloppy_restr_corr_src_av, sloppy_source_average
+
+def parse_disconnected(exact_data, sloppy_data):
+    """Takes the exact and sloppy traces supplied by load_traces and creates
+    the required correlators for the AMA
+    
+    :param exact_data: An array of exact traces loaded by the load_traces function in fileio
+    :type exact_data: :class:`numpy.ndarray`
+    :param sloppy_data: An array of sloppy traces loaded by the load_traces function in fileio
+    :type sloppy_data: :class:`numpy.ndarray`
+    
+    :returns: :class:`tuple` of :class:`numpy.ndarray`
+    """
+
+    # We *should* have traces for all sloppy timeslices, so don't need
+    # to bother with the split here
+    sloppy_timeslices = np.int64(sloppy_data[:, 0].real)
+    sloppy_trace_1 = sloppy_data[:, 1]
+    sloppy_trace_2 = sloppy_data[:, 2]
+    
+    exact_timeslices_1, exact_timeslices_2, exact_trace_1, exact_trace_2 \
+      = fileio.split_traces(exact_data)
+      
+    # Now do the combinatorics for the traces, starting with exact
+    exact_correlator = combine_traces(exact_trace_1,
+                                      exact_trace_2,
+                                      exact_timeslices_1,
+                                      exact_timeslices_2)
+    ##########################################################################
+    # In the following we need sloppy_trace_1 instead and exact_timeslices_2 #
+    ##########################################################################
+    sloppy_restricted_correlator = combine_traces(exact_trace_1,
+                                                  sloppy_trace_2,
+                                                  exact_timeslices_1,
+                                                  sloppy_timeslices)
+    
+    sloppy_correlator = combine_traces(sloppy_trace_1,
+                                       sloppy_trace_2,
+                                       sloppy_timeslices,
+                                       sloppy_timeslices)
+
+    return exact_correlator[1], sloppy_restricted_correlator[1], sloppy_correlator[1]
+
