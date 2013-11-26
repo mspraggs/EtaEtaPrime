@@ -53,7 +53,7 @@ def load_traces(filename):
     """
     
     raw_data = load_data(filename)
-    out = np.zeros((raw_data.shape[0], 4), dtype=np.complex)
+    out = np.zeros((raw_data.shape[0], 3), dtype=np.complex)
     
     out[:, 0] = raw_data[:, 0]
     out[:, 1] = raw_data[:, 1] + 1j * raw_data[:, 2]
