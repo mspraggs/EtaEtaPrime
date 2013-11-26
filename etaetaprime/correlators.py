@@ -205,9 +205,10 @@ def run_all(exact_folder, sloppy_folder, input_prefix, output_prefix, start, sto
     
     for i in xrange(start, stop + step, step):
         try:
-            correlator = run_one("{}/{}.{}".format(exact_folder, input_prefix, i),
-                                 "{}/{}.{}".format(sloppy_folder, input_prefix, i),
-                                 connected)
+            correlator \
+              = run_one("{}/{}.{}".format(exact_folder, input_prefix, i),
+                        "{}/{}.{}".format(sloppy_folder, input_prefix, i),
+                        connected)
         
             np.save("{}{}".format(output_prefix, i), correlator)
             
