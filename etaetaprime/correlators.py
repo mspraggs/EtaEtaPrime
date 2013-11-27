@@ -46,8 +46,6 @@ def combine_traces(first_trace, second_trace, first_timeslices=None,
     prods = np.outer(first_trace, second_trace)
     # Get the output timeslices by determining the uniqe list of diffs
     timeslices = np.unique(diffs)
-    # The output array
-    correlator = np.zeros(timeslices.size, dtype=np.complex)
     
     # Now loop over the unique timeslices and sum the corresponding products
     correlator = combinatorics.av_prods(timeslices, diffs, prods)
