@@ -6,7 +6,7 @@ pyximport.install(reload_support=True)
 from fastfunctions import combinatorics
 
 def combine_traces(first_trace, second_trace, first_timeslices=None,
-                   second_timeslices=None):
+                   second_timeslices=None, num_timeslices=None):
     """Computes a correlator from a pair of traces and
     their corresponding timeslices
     
@@ -20,6 +20,8 @@ def combine_traces(first_trace, second_trace, first_timeslices=None,
     :param second_timeslices: The set of timeslices over which the
     second traces are taken
     :type first_timeslices: :class:`numpy.ndarray` or :class:`list`
+    :param num_timeslices: The lattice temporal extent
+    :type num_timeslices: :class:`int`
     """
     
     # If no timeslices are given, assume the form they take
@@ -32,9 +34,14 @@ def combine_traces(first_trace, second_trace, first_timeslices=None,
     first_timeslices = np.int64(first_timeslices.real)
     second_timeslices = np.int64(second_timeslices.real)
     
+    if num_timeslices == None:
+        num_timeslices = max(np.max(first_timeslices),
+                             np.max(second_timeslices)) + 1
+    
     # Get all possible differences between the various timeslice pairings
     # (This works like an outer product, returning a 2d array)
-    diffs = combinatorics.diff(first_timeslices, second_timeslices)
+    diffs = combinatorics.diff(first_timeslices, second_timeslices,
+                               num_timeslices)
     # Get the products of all the correlators
     prods = np.outer(first_trace, second_trace)
     # Get the output timeslices by determining the uniqe list of diffs
@@ -91,7 +98,7 @@ def parse_connected(exact_data, sloppy_data):
     
     return exact_source_average, sloppy_restr_corr_src_av, sloppy_source_average
 
-def parse_disconnected(exact_data, sloppy_data):
+def parse_disconnected(exact_data, sloppy_data, num_timeslices):
     """Takes the exact and sloppy traces supplied by load_traces and creates
     the required correlators for the AMA
     
@@ -99,6 +106,8 @@ def parse_disconnected(exact_data, sloppy_data):
     :type exact_data: :class:`numpy.ndarray`
     :param sloppy_data: An array of sloppy traces loaded by the load_traces function in fileio
     :type sloppy_data: :class:`numpy.ndarray`
+    :param num_timeslices: The temporal extent of the lattice
+    :type num_timeslices: :class:`int`
     
     :returns: :class:`tuple` of :class:`numpy.ndarray`
     """
@@ -116,19 +125,22 @@ def parse_disconnected(exact_data, sloppy_data):
     exact_correlator = combine_traces(exact_trace_1,
                                       exact_trace_2,
                                       exact_timeslices_1,
-                                      exact_timeslices_2)
+                                      exact_timeslices_2,
+                                      num_timeslices)
     ##########################################################################
     # In the following we need sloppy_trace_1 instead and exact_timeslices_2 #
     ##########################################################################
     sloppy_restricted_correlator = combine_traces(exact_trace_1,
                                                   sloppy_trace_2,
                                                   exact_timeslices_1,
-                                                  sloppy_timeslices)
+                                                  sloppy_timeslices,
+                                                  num_timeslices)
     
     sloppy_correlator = combine_traces(sloppy_trace_1,
                                        sloppy_trace_2,
                                        sloppy_timeslices,
-                                       sloppy_timeslices)
+                                       sloppy_timeslices,
+                                       num_timeslices)
 
     return exact_correlator[1], sloppy_restricted_correlator[1], sloppy_correlator[1]
 
@@ -148,7 +160,7 @@ def ama(exact_correlator, sloppy_restricted_correlator, sloppy_correlator):
 
     return exact_correlator - sloppy_restricted_correlator + sloppy_correlator
 
-def run_one(exact_file, sloppy_file, connected=False):
+def run_one(exact_file, sloppy_file, num_timeslices=96, connected=False):
     """Applied the AMA procedure to the correlators or traces in the specified files
     
     :param exact_file: The file containing the exact correlators or traces
@@ -175,13 +187,13 @@ def run_one(exact_file, sloppy_file, connected=False):
         exact_data = fileio.load_traces(exact_file)
         sloppy_data = fileio.load_traces(sloppy_file)
         
-        correlators = parse_disconnected(exact_data, sloppy_data)
+        correlators = parse_disconnected(exact_data, sloppy_data, num_timeslices)
         correlator_ama = ama(*correlators)
         
         return correlator_ama
         
 def run_all(exact_folder, sloppy_folder, input_prefix, output_prefix, start, stop, step,
-            connected=False):
+            num_timeslices=96, connected=False):
     """Applies the all-mode average to all files in the specified directories
     and saves the results in a set of numpy binaries
     
@@ -199,6 +211,8 @@ def run_all(exact_folder, sloppy_folder, input_prefix, output_prefix, start, sto
     :type stop: :class:`int`
     :param step: The difference between consecutive configuration numbers
     :type step: :class:`int`
+    :param num_timeslices: The temporal extent of the lattice
+    :type num_timeslices: :class:`int`
     :param connected: Determines whether the associated diagram is connected
     :type connected: :class:`bool`
     """
@@ -208,7 +222,7 @@ def run_all(exact_folder, sloppy_folder, input_prefix, output_prefix, start, sto
             correlator \
               = run_one("{}/{}.{}".format(exact_folder, input_prefix, i),
                         "{}/{}.{}".format(sloppy_folder, input_prefix, i),
-                        connected)
+                        num_timeslices, connected)
         
             np.save("{}{}".format(output_prefix, i), correlator)
             

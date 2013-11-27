@@ -5,7 +5,7 @@ cimport cython
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.nonecheck(False)
-def diff(a, b):
+def diff(a, b, T):
     cdef int i, j, h=a.size, w=b.size
     
     cdef np.ndarray[np.int_t, ndim=2] new = np.empty((h, w), dtype=np.int)
@@ -14,7 +14,7 @@ def diff(a, b):
         for j in xrange(w):
             new[i, j] = a[i] - b[j]
             if new[i, j] < 0:
-                new[i, j] = -new[i, j]
+                new[i, j] = new[i, j] + T
             
     return new
 

@@ -82,10 +82,10 @@ class TestCorrelators:
         t2 = np.array([0, 2])
         
         expected_output = np.zeros((4, 2), dtype=int)
-        expected_output[:, 0] = np.abs(t1 - t2[0])
-        expected_output[:, 1] = np.abs(t1 - t2[1])
+        expected_output[:, 0] = (t1 - t2[0]) % 4
+        expected_output[:, 1] = (t1 - t2[1]) % 4
         
-        diffs = correlators.combinatorics.diff(t1, t2)
+        diffs = correlators.combinatorics.diff(t1, t2, 4)
         
         assert (diffs == expected_output).all()
 
@@ -97,40 +97,42 @@ class TestCorrelators:
         t2 = np.array([0, 2])
         
         diffs = np.zeros((4, 2), dtype=int)
-        diffs[:, 0] = np.abs(t1 - t2[0])
-        diffs[:, 1] = np.abs(t1 - t2[1])
+        diffs[:, 0] = (t1 - t2[0]) % 4
+        diffs[:, 1] = (t1 - t2[1]) % 4
 
         prods = npr.rand(4, 2)
         
         av_prods = correlators.combinatorics.av_prods(t1, diffs, prods)
         
-        assert np.abs(av_prods[0].real - (prods[0, 0] + prods[2, 1]) / 2) \
-          < tolerance
-        assert np.abs(av_prods[1].real - (np.sum(prods[1]) + prods[3, 1]) / 3) \
-          < tolerance
-        assert np.abs(av_prods[2].real - (prods[0, 1] + prods[2, 0]) / 2) \
-          < tolerance
-        assert np.abs(av_prods[3].real - prods[3, 0]) < tolerance
+        for i in xrange(4):
+            assert np.abs(av_prods[i].real
+                          - (prods[i, 0] + prods[(i + 2) % 4, 1]) / 2) \
+                          < tolerance
         
     def test_combine_traces(self):
+
+        T = 96
         
-        tolerance = 1e-8 * np.ones(3)
+        tolerance = 1e-8 * np.ones(T)
         
-        trace1 = npr.rand(3)
-        trace2 = npr.rand(3)
+        trace1 = npr.rand(T)
+        trace2 = npr.rand(6)
         
-        combined_trace = correlators.combine_traces(trace1, trace2)
-        expected_trace = np.zeros(3)
+        combined_trace \
+          = correlators.combine_traces(trace1, trace2,
+                                       np.arange(T),
+                                       np.arange(20, 44, 4))
+        expected_trace = np.zeros(T)
         
         outer_prod = np.outer(trace1, trace2)
         
-        expected_trace[0] = np.trace(outer_prod) / 3
-        expected_trace[1] \
-          = (outer_prod[0, 1] + outer_prod[1, 0]
-             + outer_prod[2, 1] + outer_prod[1, 2]) / 4
-        expected_trace[2] = (outer_prod[0, 2] + outer_prod[2, 0]) / 2
-          
-        assert (combined_trace[0].real == np.arange(3)).all()
+        for i in xrange(T):
+            for k, j in enumerate(xrange(20, 44, 4)):
+                expected_trace[i] \
+                  += outer_prod[(i + j) % T, k]
+            expected_trace[i] /= 6
+                              
+        assert (combined_trace[0].real == np.arange(T)).all()
         assert (np.abs(combined_trace[1].real - expected_trace)
                 < tolerance).all()
 
@@ -184,7 +186,9 @@ class TestCorrelators:
         sloppy_data[:, 1:3] = npr.rand(10, 2)
         
         disconnected_correlators \
-          = correlators.parse_disconnected(exact_data, sloppy_data)
+          = correlators.parse_disconnected(exact_data,
+                                           sloppy_data,
+                                           10)
           
         assert len(disconnected_correlators) == 3
 
