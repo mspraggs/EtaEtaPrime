@@ -127,13 +127,13 @@ def parse_disconnected(exact_data, sloppy_data, num_timeslices):
                                       exact_timeslices_1,
                                       exact_timeslices_2,
                                       num_timeslices)
-    ##########################################################################
-    # In the following we need sloppy_trace_1 instead and exact_timeslices_2 #
-    ##########################################################################
-    sloppy_restricted_correlator = combine_traces(exact_trace_1,
+    
+    sloppy_trace_1_r = sloppy_trace_1[exact_timeslices_1]
+    
+    sloppy_restricted_correlator = combine_traces(sloppy_trace_1_r,
                                                   sloppy_trace_2,
                                                   exact_timeslices_1,
-                                                  sloppy_timeslices,
+                                                  exact_timeslices_2,
                                                   num_timeslices)
     
     sloppy_correlator = combine_traces(sloppy_trace_1,
