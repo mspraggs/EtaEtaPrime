@@ -22,6 +22,8 @@ def combine_traces(first_trace, second_trace, first_timeslices=None,
     :type first_timeslices: :class:`numpy.ndarray` or :class:`list`
     :param num_timeslices: The lattice temporal extent
     :type num_timeslices: :class:`int`
+    
+    :returns: :class:`numpy.ndarray` containing timeslices and correlator values
     """
     
     # If no timeslices are given, assume the form they take
@@ -166,6 +168,7 @@ def run_one(exact_file, sloppy_file, num_timeslices=96, connected=False):
     :param sloppy_file: The file containing the sloppy correlators or traces
     :type sloppy_file: :class:`str`
     :param connected: Determines whether diagram is connected or not
+    :type connected: :class:`bool`
     
     :returns: :class:`numpy.ndarray` containing the correlator
     """
@@ -226,6 +229,3 @@ def run_all(exact_folder, sloppy_folder, input_prefix, output_prefix, start, sto
             
         except IOError:
             print("Results for configuration {} missing; skipping.".format(i))
-        
-
-    
