@@ -44,6 +44,7 @@ def combine_traces(first_trace, second_trace, first_timeslices=None,
     # (This works like an outer product, returning a 2d array)
     diffs = combinatorics.diff(first_timeslices, second_timeslices,
                                num_timeslices)
+
     # Get the products of all the correlators
     prods = np.outer(first_trace, second_trace)
     # Get the output timeslices by determining the uniqe list of diffs
@@ -182,7 +183,7 @@ def run_one(exact_file, sloppy_file, num_timeslices=96, connected=False):
         # so each item in the tuple becomes a separate argument
         correlator_ama = ama(*correlators)
         
-        return correlator_ama
+        return [correlator_ama] + list(correlators)
     
     else:
         exact_data = fileio.load_traces(exact_file)
@@ -191,7 +192,7 @@ def run_one(exact_file, sloppy_file, num_timeslices=96, connected=False):
         correlators = parse_disconnected(exact_data, sloppy_data, num_timeslices)
         correlator_ama = ama(*correlators)
         
-        return correlator_ama
+        return [correlator_ama] + list(correlators)
         
 def run_all(exact_folder, sloppy_folder, input_prefix, output_prefix, start, stop, step,
             num_timeslices=96, connected=False):
