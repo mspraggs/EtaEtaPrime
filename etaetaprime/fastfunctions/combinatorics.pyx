@@ -28,11 +28,11 @@ def av_prods(ts, diffs, prods):
       = np.zeros(num_t, dtype=np.complex128)
     
     cdef np.ndarray[np.int_t, ndim=1] frequency \
-      =np.zeros(num_t, dtype=np.int)
+      = np.zeros(num_t, dtype=np.int)
     
     cdef np.ndarray[np.int_t, ndim=1] ts_c = ts
     cdef np.ndarray[np.int_t, ndim=2] diffs_c = diffs
-      
+    
     for i in xrange(num_t):
         for j in xrange(h):
             for k in xrange(w):
