@@ -99,7 +99,7 @@ def parse_connected(exact_data, sloppy_data):
     
     return exact_source_average, sloppy_restr_corr_src_av, sloppy_source_average
 
-def parse_disconnected(exact_data, sloppy_data, num_timeslices):
+def parse_disconnected(exact_data, sloppy_data, num_timeslices, order="ls"):
     """Takes the exact and sloppy traces supplied by load_traces and creates
     the required correlators for the AMA
     
@@ -116,34 +116,79 @@ def parse_disconnected(exact_data, sloppy_data, num_timeslices):
     # We *should* have traces for all sloppy timeslices, so don't need
     # to bother with the split here
     sloppy_timeslices = np.int64(sloppy_data[:, 0].real)
-    sloppy_trace_1 = sloppy_data[:, 1]
-    sloppy_trace_2 = sloppy_data[:, 2]
+    sloppy_trace_l = sloppy_data[:, 1]
+    sloppy_trace_s = sloppy_data[:, 2]
     
-    exact_timeslices_1, exact_timeslices_2, exact_trace_1, exact_trace_2 \
+    exact_timeslices_l, exact_timeslices_s, exact_trace_l, exact_trace_s \
       = fileio.split_traces(exact_data)
-      
-    # Now do the combinatorics for the traces, starting with exact
-    exact_correlator = combine_traces(exact_trace_1,
-                                      exact_trace_2,
-                                      exact_timeslices_1,
-                                      exact_timeslices_2,
-                                      num_timeslices)
-    
-    sloppy_trace_1_r = sloppy_trace_1[exact_timeslices_1]
-    
-    sloppy_restricted_correlator = combine_traces(sloppy_trace_1_r,
-                                                  sloppy_trace_2,
-                                                  exact_timeslices_1,
-                                                  exact_timeslices_2,
-                                                  num_timeslices)
-    
-    sloppy_correlator = combine_traces(sloppy_trace_1,
-                                       sloppy_trace_2,
-                                       sloppy_timeslices,
-                                       sloppy_timeslices,
-                                       num_timeslices)
 
-    return exact_correlator[1], sloppy_restricted_correlator[1], sloppy_correlator[1]
+    if order == "ss":
+        # Now do the combinatorics for the traces, starting with exact
+        exact_correlator = combine_traces(exact_trace_s,
+                                          exact_trace_s,
+                                          exact_timeslices_s,
+                                          exact_timeslices_s,
+                                          num_timeslices)
+    
+        sloppy_trace_s_r = sloppy_trace_s[exact_timeslices_s]
+    
+        sloppy_restricted_correlator = combine_traces(sloppy_trace_s_r,
+                                                      sloppy_trace_s,
+                                                      exact_timeslices_s,
+                                                      exact_timeslices_s,
+                                                      num_timeslices)
+    
+        sloppy_correlator = combine_traces(sloppy_trace_s,
+                                           sloppy_trace_s,
+                                           sloppy_timeslices,
+                                           sloppy_timeslices,
+                                           num_timeslices)
+        
+    elif order == "ll":
+        # Now do the combinatorics for the traces, starting with exact
+        exact_correlator = combine_traces(exact_trace_l,
+                                          exact_trace_l,
+                                          exact_timeslices_l,
+                                          exact_timeslices_l,
+                                          num_timeslices)
+    
+        sloppy_trace_l_r = sloppy_trace_l[exact_timeslices_l]
+    
+        sloppy_restricted_correlator = combine_traces(sloppy_trace_l_r,
+                                                      sloppy_trace_l_r,
+                                                      exact_timeslices_l,
+                                                      exact_timeslices_l,
+                                                      num_timeslices)
+    
+        sloppy_correlator = combine_traces(sloppy_trace_l,
+                                           sloppy_trace_l,
+                                           sloppy_timeslices,
+                                           sloppy_timeslices,
+                                           num_timeslices)
+    else:
+        # Now do the combinatorics for the traces, starting with exact
+        exact_correlator = combine_traces(exact_trace_l,
+                                          exact_trace_s,
+                                          exact_timeslices_l,
+                                          exact_timeslices_s,
+                                          num_timeslices)
+    
+        sloppy_trace_l_r = sloppy_trace_l[exact_timeslices_l]
+    
+        sloppy_restricted_correlator = combine_traces(sloppy_trace_l_r,
+                                                      sloppy_trace_s,
+                                                      exact_timeslices_l,
+                                                      exact_timeslices_s,
+                                                      num_timeslices)
+    
+        sloppy_correlator = combine_traces(sloppy_trace_l,
+                                           sloppy_trace_s,
+                                           sloppy_timeslices,
+                                           sloppy_timeslices,
+                                           num_timeslices)        
+
+    # Return the timeslices for the sloppy restricted for use by ama
+    return exact_correlator[1], sloppy_restricted_correlator, sloppy_correlator[1]
 
 def ama(exact_correlator, sloppy_restricted_correlator, sloppy_correlator):
     """Takes the three correlators required for the ama and does the
@@ -158,10 +203,17 @@ def ama(exact_correlator, sloppy_restricted_correlator, sloppy_correlator):
     
     :returns: :class:`numpy.ndarray`
     """
+    
+    if len(sloppy_restricted_correlator.shape) > 1:
+        residual_timeslices = np.int64(sloppy_restricted_correlator[0].real)
+    
+        out = sloppy_correlator.copy()
+        out[residual_timeslices] += exact_correlator - sloppy_restricted_correlator[1]
+        return out
+    else:
+        return sloppy_correlator + exact_correlator - sloppy_restricted_correlator
 
-    return exact_correlator - sloppy_restricted_correlator + sloppy_correlator
-
-def run_one(exact_file, sloppy_file, num_timeslices=96, connected=False):
+def run_one(exact_file, sloppy_file, num_timeslices=96, connected=False, order="ls"):
     """Applied the AMA procedure to the correlators or traces in the specified files
     
     :param exact_file: The file containing the exact correlators or traces
@@ -189,13 +241,13 @@ def run_one(exact_file, sloppy_file, num_timeslices=96, connected=False):
         exact_data = fileio.load_traces(exact_file)
         sloppy_data = fileio.load_traces(sloppy_file)
         
-        correlators = parse_disconnected(exact_data, sloppy_data, num_timeslices)
+        correlators = parse_disconnected(exact_data, sloppy_data, num_timeslices, order)
         correlator_ama = ama(*correlators)
         
         return [correlator_ama] + list(correlators)
         
 def run_all(exact_folder, sloppy_folder, input_prefix, output_prefix, start, stop, step,
-            num_timeslices=96, connected=False):
+            num_timeslices=96, connected=False, order="ls"):
     """Applies the all-mode average to all files in the specified directories
     and saves the results in a set of numpy binaries
     
@@ -224,7 +276,7 @@ def run_all(exact_folder, sloppy_folder, input_prefix, output_prefix, start, sto
             correlator \
               = run_one("{}/{}.{}".format(exact_folder, input_prefix, i),
                         "{}/{}.{}".format(sloppy_folder, input_prefix, i),
-                        num_timeslices, connected)
+                        num_timeslices, connected, order)
         
             np.save("{}{}".format(output_prefix, i), correlator)
             
