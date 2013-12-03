@@ -143,8 +143,18 @@ class TestCorrelators:
         c = npr.rand(10)
         
         result = correlators.ama(a, b, c)
+        expected = a - b + c
         
-        assert (result == a - b + c).all()
+        assert (result - expected < 1e-10 * np.ones(10)).all()
+        
+        b = np.zeros((2, 10))
+        b[0] = np.arange(10)
+        b[1] = npr.rand(10)
+        
+        result = correlators.ama(a, b, c)
+        expected = a - b[1] + c
+        
+        assert (result - expected < 1e-10 * np.ones(10)).all()
         
     def test_parse_connected(self):
         
@@ -192,5 +202,6 @@ class TestCorrelators:
           
         assert len(disconnected_correlators) == 3
 
-        for disconnected_correlator in disconnected_correlators:
-            assert disconnected_correlator.size == 10
+        assert disconnected_correlators[0].size == 10
+        assert disconnected_correlators[1].size == 20
+        assert disconnected_correlators[2].size == 10
