@@ -42,7 +42,7 @@ def load_correlators(filename):
     out[:, 0:2] = raw_data[:, 0:2]
     out[:, 2] = raw_data[:, 2] + 1j * raw_data[:, 3]
     
-    return out
+    return out.real
 
 def load_traces(filename):
     """Loads the two traces in the specified file
@@ -59,7 +59,7 @@ def load_traces(filename):
     out[:, 1] = raw_data[:, 1] + 1j * raw_data[:, 2]
     out[:, 2] = raw_data[:, 3] + 1j * raw_data[:, 4]
 
-    return out
+    return out.real
 
 def split_traces(traces):
     """Splits the supplied trace array into traces and timeslices
