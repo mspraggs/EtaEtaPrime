@@ -2,6 +2,7 @@ import sys
 sys.path.insert(0, '/home/matthew/Programming/Python/pyQCD')
 import numpy as np
 import pyQCD
+import scipy.optimize as spop
 
 def constrained_two_state_fit(twopoint, correlator, fit_range, b_init,
                               b_est=None, b_err_est=None, stddev=None):
