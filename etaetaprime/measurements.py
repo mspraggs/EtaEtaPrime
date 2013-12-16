@@ -24,13 +24,13 @@ def constrained_two_state_fit(twopoint, correlator, fit_range, b_init,
     """
 
     t = np.arange(twopoint.T)
-    correlator = getattr(twopoint, correlator)
+    correlator = getattr(twopoint, "{}_px0_py0_pz0".format(correlator))
     
     if stddev == None:
         stddev = np.ones(twopoint.T)
     
     x = t[range(*fit_range)]
-    y = t[range(*fit_range)]
+    y = correlator[range(*fit_range)]
     err = stddev[range(*fit_range)]
     
     fit_function \
@@ -64,31 +64,23 @@ def separate_fits(twopoint, correlator, first_fit_range, second_fit_range,
     :type stddev: :class:`numpy.ndarray`
     :returns: :class:`list` containing the fitted masses and square amplitudes
     """
-
-    fit_function = lambda b, t: b[0] * np.exp(-b[1] * t)
+    correlator_attribute = "{}_px0_py0_pz0".format(correlator)
     
-    t = np.arange(twopoint.T)
-    correlator = getattr(twopoint, correlator)
+    ground_state = twopoint.compute_energy(correlator, first_fit_range,
+                                           stddev=stddev, return_amplitude=True)
+    m = ground_state[correlator_attribute][1]
+    A = ground_state[correlator_attribute][0] * 2 * m
     
-    fit_results = [0, 0, 0, 0]
-    
-    timeslices = range(*first_fit_range)
-    
-    for i in xrange(2):
-        x = t[timeslices]
-        y = correlator[timeslices]
-        yerr = correlator[timeslices]
-
-        result = spop.minimize(pyQCD.TwoPoint._chi_squared, [correlator[0], 1.0],
-                               args=(x, y, yerr, fit_function), method="Powell")
+    excited_correlator = getattr(twopoint, correlator_attribute) \
+      - A * np.exp(-m * np.arange(twopoint.T))
+      
+    setattr(twopoint, correlator_attribute, excited_correlator)
+      
+    excited_state = twopoint.compute_energy(correlator, second_fit_range,
+                                            stddev=stddev, return_amplitude=True)
         
-        fit_results[2 * i] = result['x'][0] / (2 * result['x'][1])
-        fit_results[2 * i + 1] = result['x'][1]
-        
-        correlator = correlator - fit_function(result['x'], t)
-        timeslices = range(*second_fit_range)
-        
-    return fit_results
+    return np.append(ground_state[correlator_attribute],
+                     excited_state[correlator_attribute])
 
 def excited_effmass(twopoint, fit_function, args):
     """Computes the effective mass for the excited state based on the fit
@@ -105,7 +97,9 @@ def excited_effmass(twopoint, fit_function, args):
 
     fitting_results = fit_function(twopoint, *args)
     
-    excited_correlator = getattr(twopoint, args[0]) \
+    fitting_results[0] *= 2 * fitting_results[1]
+    
+    excited_correlator = getattr(twopoint, "{}_px0_py0_pz0".format(args[0])) \
       - fitting_results[0] * np.exp(-fitting_results[1] * np.arange(twopoint.T))
 
     return np.log(np.abs(excited_correlator / np.roll(excited_correlator, -1)))
