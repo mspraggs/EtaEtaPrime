@@ -17,6 +17,14 @@ etaetaprime Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`measurements` Module
+--------------------------
+
+.. automodule :: etaetaprime.measurements
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Subpackages
 -----------
 
