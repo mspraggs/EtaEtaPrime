@@ -1,5 +1,3 @@
-import sys
-sys.path.insert(0, '/home/matthew/Programming/Python/pyQCD')
 import numpy as np
 import pyQCD
 import scipy.optimize as spop
