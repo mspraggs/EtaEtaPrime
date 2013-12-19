@@ -54,6 +54,47 @@ def constrained_two_state_fit(twopoint, correlator, fit_range, b_init,
     
     return result_values
 
+def two_state_fit_leastsq(twopoint, correlator, fit_range, b_init, stddev=None):
+    """Performs a least squares two-state fit on the supplied two-point function
+    
+    :param twopoint: TwoPoint object containing the correlators
+    :type twopoint: :class:`TwoPoint` of :class:`BareTwoPoint`
+    :param correlator: Specification of the correlator to fit
+    :type correlator: :class:`str`
+    :param fit_range: The ranger of times over which to perform the fit
+    :type fit_range: :class:`list` with two elements
+    :param b_init: Initial estimate for the fitted parameters
+    :type b_init: :class:`list`
+    :param stddev: The standard deviation in the specified correlator
+    :type stddev: :class:`numpy.ndarray`
+    :returns: :class:`list` containing the fitted masses and square amplitudes
+    """
+
+    t = np.arange(twopoint.T)
+    correlator = getattr(twopoint, "{}_px0_py0_pz0".format(correlator))
+    
+    if stddev == None:
+        stddev = np.ones(twopoint.T)
+    
+    x = t[range(*fit_range)]
+    y = correlator[range(*fit_range)]
+    err = stddev[range(*fit_range)]
+    
+    fit_function \
+      = lambda b, t, Ct, err: \
+      (Ct - b[0] * np.exp(-b[1] * t) - b[2] * np.exp(-b[3] * t)) / err
+
+    b, result = spop.leastsq(fit_function, b_init, args=(x, y, err))
+
+    for i in xrange(10):
+        b, result = spop.leastsq(fit_function, b, args=(x, y, err))
+        
+    result_values = b
+    result_values[0] /= 2 * result_values[1]
+    result_values[2] /= 2 * result_values[3]
+    
+    return result_values
+
 def separate_fits(twopoint, correlator, first_fit_range, second_fit_range,
                   stddev=None):
     """Fits the ground state and first excited state by performing a one-state
