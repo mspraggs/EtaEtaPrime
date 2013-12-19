@@ -39,7 +39,15 @@ def constrained_two_state_fit(twopoint, correlator, fit_range, b_init,
     result = spop.minimize(pyQCD.TwoPoint._chi_squared, b_init,
                            args=(x, y, err, fit_function, b_est, b_err_est),
                            method="Powell")
-    
+
+    for i in xrange(20):
+        result = spop.minimize(pyQCD.TwoPoint._chi_squared, result['x'],
+                               args=(x, y, err, fit_function, b_est, b_err_est),
+                               method="Powell")
+        
+    chi_square = pyQCD.TwoPoint._chi_squared(result['x'], x, y, err, fit_function,
+                                             b_est, b_err_est)
+
     result_values = result['x']
     result_values[0] /= 2 * result_values[1]
     result_values[2] /= 2 * result_values[3]
