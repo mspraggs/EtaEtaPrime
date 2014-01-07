@@ -146,7 +146,7 @@ def excited_effmass(twopoint, fit_function, args):
 
     fitting_results = fit_function(twopoint, *args)
     
-    fitting_results[0] *= 2 * fitting_results[1]
+    #fitting_results[0] *= 2 * fitting_results[1]
     
     excited_correlator = getattr(twopoint, "{}_px0_py0_pz0".format(args[0])) \
       - fitting_results[0] * np.exp(-fitting_results[1] * np.arange(twopoint.T))
