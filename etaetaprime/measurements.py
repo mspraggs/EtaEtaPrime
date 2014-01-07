@@ -49,8 +49,8 @@ def constrained_two_state_fit(twopoint, correlator, fit_range, b_init,
                                              b_est, b_err_est)
 
     result_values = result['x']
-    result_values[0] /= 2 * result_values[1]
-    result_values[2] /= 2 * result_values[3]
+    #result_values[0] /= 2 * result_values[1]
+    #result_values[2] /= 2 * result_values[3]
     
     return result_values
 
@@ -90,8 +90,8 @@ def two_state_fit_leastsq(twopoint, correlator, fit_range, b_init, stddev=None):
         b, result = spop.leastsq(fit_function, b, args=(x, y, err))
         
     result_values = b
-    result_values[0] /= 2 * result_values[1]
-    result_values[2] /= 2 * result_values[3]
+    #result_values[0] /= 2 * result_values[1]
+    #result_values[2] /= 2 * result_values[3]
     
     return result_values
 
