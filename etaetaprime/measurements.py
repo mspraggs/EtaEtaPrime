@@ -86,7 +86,7 @@ def two_state_fit_leastsq(twopoint, correlator, fit_range, b_init, stddev=None):
 
     b, result = spop.leastsq(fit_function, b_init, args=(x, y, err))
 
-    for i in xrange(10):
+    for i in xrange(0):
         b, result = spop.leastsq(fit_function, b, args=(x, y, err))
         
     result_values = b
@@ -152,3 +152,5 @@ def excited_effmass(twopoint, fit_function, args):
       - fitting_results[0] * np.exp(-fitting_results[1] * np.arange(twopoint.T))
 
     return np.log(np.abs(excited_correlator / np.roll(excited_correlator, -1)))
+
+#def fit_all_correlators(twopoint, fit_range, )
