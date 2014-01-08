@@ -1,6 +1,7 @@
 import numpy as np
 import pyQCD
 import scipy.optimize as spop
+import minimizers
 
 def constrained_two_state_fit(twopoint, correlator, fit_range, b_init,
                               b_est=None, b_err_est=None, stddev=None):
@@ -53,6 +54,49 @@ def constrained_two_state_fit(twopoint, correlator, fit_range, b_init,
     #result_values[2] /= 2 * result_values[3]
     
     return result_values
+
+def two_state_grid_minimize(twopoint, correlator, fit_range, b_ranges,
+                              b_est=None, b_err_est=None, stddev=None):
+    """Performs a constrained fit on the supplied two-point function using the
+    custom grid_search algorithm
+    
+    :param twopoint: TwoPoint object containing the correlators
+    :type twopoint: :class:`TwoPoint` of :class:`BareTwoPoint`
+    :param correlator: Specification of the correlator to fit
+    :type correlator: :class:`str`
+    :param fit_range: The ranger of times over which to perform the fit
+    :type fit_range: :class:`list` with two elements
+    :param b_ranges: Initial search range for the fitted parameters
+    :type b_ranges: :class:`list`
+    :param b_est: Estimated central value for use when performing a constrained fit
+    :type b_est: :class:`list`
+    :param b_err_est: Estimated standard deviation for use when performing a constrained fit
+    :type b_err_est: :class:`list`
+    :param stddev: The standard deviation in the specified correlator
+    :type stddev: :class:`numpy.ndarray`
+    :returns: :class:`list` containing the fitted masses and square amplitudes
+    """
+
+    t = np.arange(twopoint.T)
+    correlator = getattr(twopoint, "{}_px0_py0_pz0".format(correlator))
+    
+    if stddev == None:
+        stddev = np.ones(twopoint.T)
+    
+    x = t[range(*fit_range)]
+    y = correlator[range(*fit_range)]
+    err = stddev[range(*fit_range)]
+    
+    fit_function \
+      = lambda b, t: b[0] * np.exp(-b[1] * t) + b[2] * np.exp(-b[3] * t)
+
+    result = minimizers.grid_search(pyQCD.TwoPoint._chi_squared, b_ranges,
+                                    args=(x, y, err, fit_function, b_est,
+                                          b_err_est), tolerance=1e-9, grid_points=100)
+    
+    print(result)
+    
+    return result
 
 def two_state_fit_leastsq(twopoint, correlator, fit_range, b_init, stddev=None):
     """Performs a least squares two-state fit on the supplied two-point function
