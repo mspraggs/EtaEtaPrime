@@ -197,4 +197,28 @@ def excited_effmass(twopoint, fit_function, args):
 
     return np.log(np.abs(excited_correlator / np.roll(excited_correlator, -1)))
 
+def combined_effmass(twopoint, fit_function, args):
+    """Computes the combinedeffective mass of the first two states based on the
+    fit results from fit_function
+    
+    :param twopoint: The two-point object containing the correlator to calculate the effective mass from
+    :type twopoint: :class:`TwoPoint` or :class:`BareTwoPoint`
+    :param fit_function: The function used to extract the ground and excited states
+    :type fit_function: :class:`function`
+    :param args: The arguments for the supplied fitting function, the first of which should specify the correlator to use
+    :type args: :class:`list`
+    :returns: :class:`numpy.ndarray`
+    """
+
+    fitting_results = fit_function(twopoint, *args)
+    
+    #fitting_results[0] *= 2 * fitting_results[1]
+    
+    t = np.arange(twopoint.T)
+    
+    combined_correlator = fitting_results[0] * np.exp(-fitting_results[1] * t) \
+      + fitting_results[2] * np.exp(-fitting_results[3] * t)
+
+    return np.log(np.abs(combined_correlator / np.roll(combined_correlator, -1)))
+
 #def fit_all_correlators(twopoint, fit_range, )
